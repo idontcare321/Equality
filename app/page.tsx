@@ -8,6 +8,7 @@ import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings } from "lucide
 import { LiveStats } from "@/components/live-stats"
 import { ReviewsSection } from "@/components/reviews-section"
 import { ThemeSelector, type Theme } from "@/components/theme-selector"
+import { ToolsStatus } from "@/components/tools-status"
 
 export default function HomePage() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
@@ -183,10 +184,13 @@ export default function HomePage() {
                 </Button>
               </div>
 
+              {/* Tools Status */}
+              <ToolsStatus theme={theme} />
+
               <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
                 <DialogTrigger asChild>
                   <Button
-                    className={`w-full ${styles.generatorButton} text-white h-16 text-xl font-bold rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-300`}
+                    className={`w-full ${styles.generatorButton} text-white h-16 text-xl font-bold rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-300 mt-6`}
                   >
                     <Zap className="w-6 h-6 mr-2" />
                     Generator
