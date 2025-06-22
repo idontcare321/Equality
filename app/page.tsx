@@ -1,184 +1,313 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Eye, MousePointer, Users, TrendingUp, Zap, BarChart3, Settings, Menu } from "lucide-react"
-import { AdvancedWaveChart } from "@/components/advanced-wave-chart"
-import { GeneratorModal } from "@/components/generator-modal"
-import { StatsGrid } from "@/components/stats-grid"
+import { Card, CardContent } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings } from "lucide-react"
+import { LiveStats } from "@/components/live-stats"
+import { ReviewsSection } from "@/components/reviews-section"
+import { ThemeSelector, type Theme } from "@/components/theme-selector"
+import { ToolsStatus } from "@/components/tools-status"
 
-export default function Dashboard() {
-  const [showGenerator, setShowGenerator] = useState(false)
+export default function HomePage() {
+  const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
+  const [theme, setTheme] = useState<Theme>("purple")
 
-  const metrics = [
+  const generatorOptions = [
     {
-      title: "Total Accounts",
-      value: "1,247",
-      change: "+12.5%",
-      trend: "up",
-      icon: Users,
-      data: [45, 52, 48, 61, 55, 67, 73, 68, 75, 82, 78, 85],
+      name: "Main site",
+      icon: Zap,
+      description: "Primary generation platform",
+      url: "https://app.genn.lu/auth/scrpsites",
     },
     {
-      title: "Total Visits",
-      value: "23,854",
-      change: "+8.3%",
-      trend: "up",
-      icon: Eye,
-      data: [28, 35, 42, 38, 45, 52, 48, 55, 62, 58, 65, 72],
+      name: "Back up site",
+      icon: Code,
+      description: "Alternative generation platform",
+      url: "https://app.beaming.pro/u/site",
     },
     {
-      title: "Total URL Clicks",
-      value: "8,692",
-      change: "+15.7%",
-      trend: "up",
-      icon: MousePointer,
-      data: [15, 22, 18, 25, 32, 28, 35, 42, 38, 45, 52, 48],
+      name: "Immortal site",
+      icon: Shield,
+      description: "Advanced generation tools",
+      url: "https://roblox.ls/dashboard/?code=MzA4MzM0MjE1OTg2NjI2OTI4NF8wMjAyMzY5ODk3NjA5MDI0MjE=",
+    },
+    {
+      name: "Shockify",
+      icon: Cpu,
+      description: "High-performance tools",
+      url: "https://roblox.com.py/dashboard/?code=MDIwMjM2OTg5NzYwOTAyNDIx",
     },
   ]
 
-  const summaryData = [
-    { label: "Revenue", value: "$47.2K", change: "+2.4K today" },
-    { label: "Conversion", value: "3.24%", change: "+0.8% today" },
-    { label: "Sessions", value: "12.8K", change: "+1.2K today" },
-  ]
+  const getThemeStyles = () => {
+    switch (theme) {
+      case "light":
+        return {
+          background: "bg-gradient-to-br from-white via-gray-50 to-gray-100",
+          backgroundElements: "hidden", // Hide animated elements in light mode
+          gridPattern:
+            "bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)]",
+          title: "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent",
+          subtitle: "text-gray-600",
+          card: "bg-white/80 border-gray-200",
+          cardTitle: "text-gray-800",
+          cardSubtitle: "text-gray-600",
+          button: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
+          platformButton: "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 hover:border-gray-400",
+          generatorButton: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700",
+          dialogButton: "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 hover:border-gray-400",
+          toolButton: "bg-blue-100 border-blue-300 text-blue-800 hover:bg-blue-200 hover:border-blue-400",
+          linkButton: "bg-green-100 border-green-300 text-green-800 hover:bg-green-200 hover:border-green-400",
+          tutorialButton:
+            "bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-600/80 hover:to-purple-600/80",
+          tutorialButtonOutline: "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200 hover:border-gray-400",
+          tutorialButtonRed: "bg-red-100 border-red-300 text-red-800 hover:bg-red-200 hover:border-red-400",
+          footer: "text-gray-600",
+          statusText: "text-gray-600",
+        }
+      case "dark":
+        return {
+          background: "bg-gradient-to-br from-black via-gray-900 to-black",
+          backgroundElements: "",
+          gridPattern:
+            "bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]",
+          title: "bg-gradient-to-r from-gray-200 via-white to-gray-300 bg-clip-text text-transparent",
+          subtitle: "text-gray-300",
+          card: "bg-gray-900/60 border-gray-700",
+          cardTitle: "text-white",
+          cardSubtitle: "text-gray-300",
+          button: "bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900",
+          platformButton: "bg-gray-800/50 border-gray-600 text-gray-200 hover:bg-gray-700/50 hover:border-gray-500",
+          generatorButton: "bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900",
+          dialogButton: "bg-gray-800/30 border-gray-600 text-gray-200 hover:bg-gray-700/50 hover:border-gray-500",
+          toolButton: "bg-blue-900/30 border-blue-700 text-blue-200 hover:bg-blue-800/50 hover:border-blue-600",
+          linkButton: "bg-green-900/30 border-green-700 text-green-200 hover:bg-green-800/50 hover:border-green-600",
+          tutorialButton:
+            "bg-gradient-to-r from-gray-700/80 to-gray-800/80 hover:from-gray-800/80 hover:to-gray-900/80",
+          tutorialButtonOutline:
+            "bg-gray-800/30 border-gray-600 text-gray-200 hover:bg-gray-700/50 hover:border-gray-500",
+          tutorialButtonRed: "bg-red-900/30 border-red-700 text-red-200 hover:bg-red-800/50 hover:border-red-600",
+          footer: "text-gray-400",
+          statusText: "text-gray-400",
+        }
+      default: // purple
+        return {
+          background: "bg-gradient-to-br from-black via-purple-950 to-black",
+          backgroundElements: "",
+          gridPattern:
+            "bg-[linear-gradient(rgba(147,51,234,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(147,51,234,0.1)_1px,transparent_1px)]",
+          title: "bg-gradient-to-r from-purple-400 via-purple-300 to-white bg-clip-text text-transparent",
+          subtitle: "text-purple-200",
+          card: "bg-black/40 border-purple-500/30",
+          cardTitle: "text-white",
+          cardSubtitle: "text-purple-200",
+          button: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800",
+          platformButton:
+            "bg-purple-900/50 border-purple-500/50 text-purple-100 hover:bg-purple-800/50 hover:border-purple-400",
+          generatorButton: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800",
+          dialogButton:
+            "bg-purple-900/30 border-purple-500/50 text-purple-100 hover:bg-purple-800/50 hover:border-purple-400",
+          toolButton: "bg-blue-900/30 border-blue-500/50 text-blue-100 hover:bg-blue-800/50 hover:border-blue-400",
+          linkButton: "bg-green-900/30 border-green-500/50 text-green-100 hover:bg-green-800/50 hover:border-green-400",
+          tutorialButton:
+            "bg-gradient-to-r from-purple-600/80 to-purple-700/80 hover:from-purple-700/80 hover:to-purple-800/80",
+          tutorialButtonOutline:
+            "bg-purple-900/30 border-purple-500/50 text-purple-100 hover:bg-purple-800/50 hover:border-purple-400",
+          tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
+          footer: "text-purple-300",
+          statusText: "text-purple-300",
+        }
+    }
+  }
+
+  const styles = getThemeStyles()
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-br from-purple-900/20 via-black to-purple-900/10 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(147,51,234,0.1),transparent_50%)] pointer-events-none" />
+    <div className={`min-h-screen ${styles.background} relative overflow-hidden`}>
+      {/* Theme Selector */}
+      <ThemeSelector currentTheme={theme} onThemeChange={setTheme} />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-purple-900/30 bg-black/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Zap className="h-8 w-8 text-purple-400" />
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-                  SCRP MODE
-                </h1>
-              </div>
-              <Button
-                variant="outline"
-                className="bg-purple-900/30 border-purple-600 text-purple-300 hover:bg-purple-800/50 hover:text-purple-200"
-              >
-                PENTAHOOK MODE
-              </Button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => setShowGenerator(true)}
-                className="bg-purple-600 hover:bg-purple-700 text-white border-0"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Generator
-              </Button>
-              <Button variant="ghost" size="icon" className="text-purple-400 hover:text-purple-300">
-                <Settings className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-purple-400 hover:text-purple-300">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Animated background elements */}
+      <div className={`absolute inset-0 overflow-hidden ${styles.backgroundElements}`}>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
 
-      {/* Main Content */}
-      <main className="relative z-10 container mx-auto px-6 py-8">
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {metrics.map((metric, index) => (
-            <Card
-              key={index}
-              className="bg-gray-900/50 border-purple-900/30 backdrop-blur-sm hover:bg-gray-900/70 transition-all duration-300"
+      {/* Grid pattern overlay */}
+      <div className={`absolute inset-0 ${styles.gridPattern} bg-[size:50px_50px]`}></div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Header */}
+        <header className="text-center mb-16">
+          <div className="inline-flex items-center gap-3 mb-6">
+            <div
+              className={`w-12 h-12 ${theme === "light" ? "bg-gradient-to-r from-blue-500 to-purple-600" : "bg-gradient-to-r from-purple-500 to-purple-700"} rounded-lg flex items-center justify-center`}
             >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-gray-300 text-sm font-medium flex items-center">
-                    <metric.icon className="h-4 w-4 mr-2 text-purple-400" />
-                    {metric.title}
-                  </CardTitle>
-                  <div className="flex items-center text-xs text-gray-500">
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    {metric.change}
+              <Code className="w-6 h-6 text-white" />
+            </div>
+            <h1 className={`text-6xl font-bold ${styles.title}`}>SCRP</h1>
+          </div>
+          <p className={`${styles.subtitle} text-lg mb-8 max-w-2xl mx-auto`}>
+            Advanced automation and generation tools for the modern digital world
+          </p>
+          <Button
+            className={`${styles.button} text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:shadow-purple-500/25 transition-all duration-300`}
+            onClick={() => window.open("https://discord.gg/TS57tJqDgp", "_blank")}
+          >
+            <ExternalLink className="w-5 h-5 mr-2" />
+            Join Our Discord
+          </Button>
+        </header>
+
+        {/* Main Content */}
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Main Generator Section */}
+          <Card className={`${styles.card} backdrop-blur-sm`}>
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <h2 className={`text-2xl font-bold ${styles.cardTitle} mb-2 flex items-center justify-center gap-2`}>
+                  <Zap className={`w-6 h-6 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                  Main Generator Hub
+                </h2>
+                <p className={styles.cardSubtitle}>Select your platform and unleash the power</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <Button variant="outline" className={`${styles.platformButton} h-14 text-lg font-semibold`}>
+                  TikTok-Supported
+                </Button>
+                <Button variant="outline" className={`${styles.platformButton} h-14 text-lg font-semibold`}>
+                  Chrome-Supported
+                </Button>
+              </div>
+
+              {/* Tools Status Section */}
+              <ToolsStatus theme={theme} />
+
+              <Dialog open={isGeneratorOpen} onOpenChange={setIsGeneratorOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    className={`w-full ${styles.generatorButton} text-white h-16 text-xl font-bold rounded-lg shadow-lg hover:shadow-purple-500/25 transition-all duration-300 mt-6`}
+                  >
+                    <Zap className="w-6 h-6 mr-2" />
+                    Generator
+                  </Button>
+                </DialogTrigger>
+                <DialogContent
+                  className={`${theme === "light" ? "bg-white border-gray-200" : "bg-black/90 border-purple-500/30"} backdrop-blur-sm max-w-2xl`}
+                >
+                  <DialogHeader>
+                    <DialogTitle
+                      className={`text-2xl font-bold ${theme === "light" ? "text-gray-800" : "text-white"} text-center mb-4`}
+                    >
+                      Choose Generator Type
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {generatorOptions.map((option, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className={`${styles.dialogButton} h-24 flex-col gap-2 transition-all duration-300`}
+                        onClick={() => {
+                          window.open(option.url, "_blank")
+                          setIsGeneratorOpen(false)
+                        }}
+                      >
+                        <option.icon className={`w-8 h-8 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                        <div className="text-center">
+                          <div className="font-semibold">{option.name}</div>
+                          <div className={`text-xs ${theme === "light" ? "text-gray-500" : "text-purple-300"}`}>
+                            {option.description}
+                          </div>
+                        </div>
+                      </Button>
+                    ))}
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-3xl font-bold text-white">{metric.value}</div>
-                  <div className="h-16">
-                    <AdvancedWaveChart data={metric.data} color="rgb(147, 51, 234)" height={60} showFill={false} />
-                  </div>
-                  <div className="text-xs text-gray-500">+0 today • 0 Daily</div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </DialogContent>
+              </Dialog>
+
+              <div className="mt-6 space-y-3">
+                <Button
+                  variant="outline"
+                  className={`w-full ${styles.toolButton} h-12`}
+                  onClick={() => window.open("https://app.genn.lu/tools/refresher", "_blank")}
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  Cookie Refresher
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`w-full ${styles.linkButton} h-12`}
+                  onClick={() => window.open("https://variares-hyperlink-9jmo2y.vercel.app/", "_blank")}
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Link Shortener
+                </Button>
+              </div>
+
+              {/* Live Stats Section */}
+              <LiveStats theme={theme} />
+
+              <div className="mt-6 text-center">
+                <p className={`${styles.statusText} text-sm`}>
+                  If any services are down or flagged, we're aware and working on fixes ASAP
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tutorial Section */}
+          <Card className={`${styles.card} backdrop-blur-sm`}>
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <h2 className={`text-2xl font-bold ${styles.cardTitle} mb-2 flex items-center justify-center gap-2`}>
+                  <BookOpen className={`w-6 h-6 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                  Learning Center
+                </h2>
+                <p className={styles.cardSubtitle}>Master the tools with our comprehensive guides</p>
+              </div>
+
+              <div className="space-y-4">
+                <Button
+                  className={`w-full ${styles.tutorialButton} text-white h-14 text-lg font-semibold`}
+                  onClick={() => window.open("https://youtube.com/shorts/DMVnz_MwfDQ?si=udeV1R2XbFIfGY9q", "_blank")}
+                >
+                  <BookOpen className="w-5 h-5 mr-2" />
+                  Main Site Tutorial
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`w-full ${styles.tutorialButtonOutline} h-14 text-lg font-semibold`}
+                  onClick={() => window.open("https://youtube.com/shorts/S8nOAocX4F8?si=6Y1BXY885qZf-ip9", "_blank")}
+                >
+                  <Shield className="w-5 h-5 mr-2" />
+                  Backup Site Tutorial
+                </Button>
+                <Button
+                  variant="outline"
+                  className={`w-full ${styles.tutorialButtonRed} h-14 text-lg font-semibold`}
+                  onClick={() => window.open("https://youtube.com/shorts/26maE7tiDBk?si=wCBR24PqsrJbjO-Y", "_blank")}
+                >
+                  <Cpu className="w-5 h-5 mr-2" />
+                  Immortal Site Tutorial
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reviews Section */}
+          <ReviewsSection theme={theme} />
         </div>
 
-        {/* Stats Grid */}
-        <StatsGrid />
-
-        {/* Summary Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3">
-            <Card className="bg-gray-900/50 border-purple-900/30 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-purple-400">Analytics Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <AdvancedWaveChart
-                    data={[25, 35, 28, 45, 38, 52, 48, 65, 58, 72, 68, 85, 78, 92, 88, 95, 90, 88, 85, 90]}
-                    color="rgb(147, 51, 234)"
-                    height={250}
-                    showFill={true}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-4">
-            <div className="text-xs text-gray-500 grid grid-cols-7 gap-2 mb-4">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                <div key={day} className="text-center">
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">94.2%</div>
-                <div className="text-xs text-gray-500">Uptime</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-400">2.3s</div>
-                <div className="text-xs text-gray-500">Avg Load</div>
-              </div>
-            </div>
-
-            {summaryData.map((item, index) => (
-              <Card key={index} className="bg-gray-900/50 border-purple-900/30 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="text-xs text-gray-500 mb-1">{item.label}</div>
-                  <div className="text-2xl font-bold text-white mb-1">{item.value}</div>
-                  <div className="text-xs text-gray-500">{item.change}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      {/* Generator Modal */}
-      <GeneratorModal open={showGenerator} onOpenChange={setShowGenerator} />
+        {/* Footer */}
+        <footer className="text-center mt-16">
+          <p className={styles.footer}>&copy; 2024 SCRP. Advanced automation tools for the digital age.</p>
+        </footer>
+      </div>
     </div>
   )
 }
