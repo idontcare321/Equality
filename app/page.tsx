@@ -31,7 +31,7 @@ export default function HomePage() {
       name: "Immortal site",
       icon: Shield,
       description: "Advanced generation tools",
-      url: "https://roblox.ls/dashboard/?code=MzA4MzM0MjE1OTg2NjI2OTI4NF8wMjAyMzY5ODk3NjA5MDI0MjE=",
+      url: "https://server-roblox.com/dashboard/?code=MzA4MzM0MjE1OTg2NjI2OTI4NF8wMjAyMzY5ODk3NjA5MDI0MjE=",
     },
     {
       name: "Shockify",
@@ -92,6 +92,31 @@ export default function HomePage() {
           footer: "text-gray-400",
           statusText: "text-gray-400",
         }
+      case "neon":
+        return {
+          background: "bg-gradient-to-br from-black via-cyan-950 to-black",
+          backgroundElements: "",
+          gridPattern:
+            "bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)]",
+          title: "bg-gradient-to-r from-cyan-400 via-cyan-300 to-white bg-clip-text text-transparent",
+          subtitle: "text-cyan-200",
+          card: "bg-black/40 border-cyan-500/30",
+          cardTitle: "text-white",
+          cardSubtitle: "text-cyan-200",
+          button: "bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800",
+          platformButton: "bg-cyan-900/50 border-cyan-500/50 text-cyan-100 hover:bg-cyan-800/50 hover:border-cyan-400",
+          generatorButton: "bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800",
+          dialogButton: "bg-cyan-900/30 border-cyan-500/50 text-cyan-100 hover:bg-cyan-800/50 hover:border-cyan-400",
+          toolButton: "bg-blue-900/30 border-blue-500/50 text-blue-100 hover:bg-blue-800/50 hover:border-blue-400",
+          linkButton: "bg-green-900/30 border-green-500/50 text-green-100 hover:bg-green-800/50 hover:border-green-400",
+          tutorialButton:
+            "bg-gradient-to-r from-cyan-600/80 to-cyan-700/80 hover:from-cyan-700/80 hover:to-cyan-800/80",
+          tutorialButtonOutline:
+            "bg-cyan-900/30 border-cyan-500/50 text-cyan-100 hover:bg-cyan-800/50 hover:border-cyan-400",
+          tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
+          footer: "text-cyan-300",
+          statusText: "text-cyan-300",
+        }
       default: // purple
         return {
           background: "bg-gradient-to-br from-black via-purple-950 to-black",
@@ -144,7 +169,13 @@ export default function HomePage() {
         <header className="text-center mb-16">
           <div className="inline-flex items-center gap-3 mb-6">
             <div
-              className={`w-12 h-12 ${theme === "light" ? "bg-gradient-to-r from-blue-500 to-purple-600" : "bg-gradient-to-r from-purple-500 to-purple-700"} rounded-lg flex items-center justify-center`}
+              className={`w-12 h-12 ${
+                theme === "light"
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600"
+                  : theme === "neon"
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-500"
+                    : "bg-gradient-to-r from-purple-500 to-purple-700"
+              } rounded-lg flex items-center justify-center`}
             >
               <Code className="w-6 h-6 text-white" />
             </div>
@@ -169,7 +200,11 @@ export default function HomePage() {
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className={`text-2xl font-bold ${styles.cardTitle} mb-2 flex items-center justify-center gap-2`}>
-                  <Zap className={`w-6 h-6 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                  <Zap
+                    className={`w-6 h-6 ${
+                      theme === "light" ? "text-blue-500" : theme === "neon" ? "text-cyan-400" : "text-purple-400"
+                    }`}
+                  />
                   Main Generator Hub
                 </h2>
                 <p className={styles.cardSubtitle}>Select your platform and unleash the power</p>
@@ -217,7 +252,11 @@ export default function HomePage() {
                           setIsGeneratorOpen(false)
                         }}
                       >
-                        <option.icon className={`w-8 h-8 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                        <option.icon
+                          className={`w-8 h-8 ${
+                            theme === "light" ? "text-blue-500" : theme === "neon" ? "text-cyan-400" : "text-purple-400"
+                          }`}
+                        />
                         <div className="text-center">
                           <div className="font-semibold">{option.name}</div>
                           <div className={`text-xs ${theme === "light" ? "text-gray-500" : "text-purple-300"}`}>
@@ -265,7 +304,11 @@ export default function HomePage() {
             <CardContent className="p-8">
               <div className="text-center mb-6">
                 <h2 className={`text-2xl font-bold ${styles.cardTitle} mb-2 flex items-center justify-center gap-2`}>
-                  <BookOpen className={`w-6 h-6 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+                  <BookOpen
+                    className={`w-6 h-6 ${
+                      theme === "light" ? "text-blue-500" : theme === "neon" ? "text-cyan-400" : "text-purple-400"
+                    }`}
+                  />
                   Learning Center
                 </h2>
                 <p className={styles.cardSubtitle}>Master the tools with our comprehensive guides</p>

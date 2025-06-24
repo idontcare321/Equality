@@ -95,6 +95,15 @@ export function ReviewsSection({ theme }: ReviewsSectionProps) {
           author: "text-gray-400",
           indicator: "text-gray-500",
         }
+      case "neon":
+        return {
+          container: "bg-gradient-to-r from-yellow-900/10 to-orange-900/10 border border-yellow-500/20",
+          title: "text-white",
+          subtitle: "text-cyan-200",
+          quote: "text-white",
+          author: "text-cyan-300",
+          indicator: "text-cyan-400/70",
+        }
       default: // purple
         return {
           container: "bg-gradient-to-r from-yellow-900/10 to-orange-900/10 border border-yellow-500/20",

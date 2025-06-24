@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Palette, Check } from "lucide-react"
 
-export type Theme = "purple" | "dark" | "light"
+export type Theme = "purple" | "dark" | "light" | "neon"
 
 interface ThemeSelectorProps {
   currentTheme: Theme
@@ -19,6 +19,7 @@ export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProp
     { id: "purple" as Theme, name: "Default (Purple)", color: "bg-purple-500" },
     { id: "dark" as Theme, name: "Dark Mode (Black)", color: "bg-gray-900" },
     { id: "light" as Theme, name: "Light Mode (White)", color: "bg-white border border-gray-300" },
+    { id: "neon" as Theme, name: "Neon (Cyan)", color: "bg-gradient-to-r from-cyan-400 to-blue-500" },
   ]
 
   return (

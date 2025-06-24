@@ -65,6 +65,14 @@ export function LiveStats({ theme }: LiveStatsProps) {
           username: "text-purple-200 font-medium",
           subtitle: "text-purple-400/70",
         }
+      case "neon":
+        return {
+          container: "bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border border-cyan-500/30",
+          title: "text-cyan-300",
+          text: "text-gray-300",
+          username: "text-cyan-200 font-medium",
+          subtitle: "text-cyan-400/70",
+        }
     }
   }
 
@@ -73,7 +81,11 @@ export function LiveStats({ theme }: LiveStatsProps) {
   return (
     <div className={`mt-8 p-4 ${styles.container} rounded-lg backdrop-blur-sm`}>
       <div className="flex items-center gap-2 mb-3">
-        <Zap className={`w-4 h-4 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+        <Zap
+          className={`w-4 h-4 ${
+            theme === "light" ? "text-blue-500" : theme === "neon" ? "text-cyan-400" : "text-purple-400"
+          }`}
+        />
         <h3 className={`text-sm font-semibold ${styles.title}`}>Recent Activity</h3>
         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
       </div>

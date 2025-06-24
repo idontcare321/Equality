@@ -73,6 +73,14 @@ export function ToolsStatus({ theme }: ToolsStatusProps) {
           onlineText: "text-green-400",
           offlineText: "text-red-400",
         }
+      case "neon":
+        return {
+          container: "bg-cyan-900/20 border border-cyan-500/30",
+          title: "text-white",
+          statusText: "text-cyan-200",
+          onlineText: "text-green-400",
+          offlineText: "text-red-400",
+        }
     }
   }
 
@@ -81,7 +89,11 @@ export function ToolsStatus({ theme }: ToolsStatusProps) {
   return (
     <div className={`mt-6 p-4 ${styles.container} rounded-lg backdrop-blur-sm`}>
       <div className="flex items-center gap-2 mb-3">
-        <Wifi className={`w-4 h-4 ${theme === "light" ? "text-blue-500" : "text-purple-400"}`} />
+        <Wifi
+          className={`w-4 h-4 ${
+            theme === "light" ? "text-blue-500" : theme === "neon" ? "text-cyan-400" : "text-purple-400"
+          }`}
+        />
         <h3 className={`text-sm font-semibold ${styles.title}`}>Tools Status</h3>
       </div>
 
@@ -102,7 +114,11 @@ export function ToolsStatus({ theme }: ToolsStatusProps) {
       </div>
 
       <div className="mt-3 text-center">
-        <p className={`text-xs ${theme === "light" ? "text-gray-500" : "text-purple-400/70"}`}>
+        <p
+          className={`text-xs ${
+            theme === "light" ? "text-gray-500" : theme === "neon" ? "text-cyan-400/70" : "text-purple-400/70"
+          }`}
+        >
           Status updated every 30 seconds • Last check: {new Date().toLocaleTimeString()}
         </p>
       </div>
