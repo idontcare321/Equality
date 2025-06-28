@@ -1,18 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings } from "lucide-react"
-import { LiveStats } from "@/components/live-stats"
-import { ReviewsSection } from "@/components/reviews-section"
 import { ThemeSelector, type Theme } from "@/components/theme-selector"
 import { ToolsStatus } from "@/components/tools-status"
 
 export default function HomePage() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>("purple")
+
+  // Load saved theme on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("scrp-theme") as Theme
+    if (savedTheme && ["purple", "dark", "light", "neon"].includes(savedTheme)) {
+      setTheme(savedTheme)
+    }
+  }, [])
+
+  // Save theme to localStorage when it changes
+  const handleThemeChange = (newTheme: Theme) => {
+    setTheme(newTheme)
+    localStorage.setItem("scrp-theme", newTheme)
+  }
 
   const generatorOptions = [
     {
@@ -46,7 +58,6 @@ export default function HomePage() {
       case "light":
         return {
           background: "bg-gradient-to-br from-white via-gray-50 to-gray-100",
-          backgroundElements: "hidden", // Hide animated elements in light mode
           gridPattern:
             "bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)]",
           title: "bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent",
@@ -66,11 +77,16 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-100 border-red-300 text-red-800 hover:bg-red-200 hover:border-red-400",
           footer: "text-gray-600",
           statusText: "text-gray-600",
+          // Animated elements for light theme
+          animatedElements: {
+            primary: "bg-blue-500/10",
+            secondary: "bg-purple-500/10",
+            tertiary: "bg-indigo-500/10",
+          },
         }
       case "dark":
         return {
           background: "bg-gradient-to-br from-black via-gray-900 to-black",
-          backgroundElements: "",
           gridPattern:
             "bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]",
           title: "bg-gradient-to-r from-gray-200 via-white to-gray-300 bg-clip-text text-transparent",
@@ -91,11 +107,16 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-700 text-red-200 hover:bg-red-800/50 hover:border-red-600",
           footer: "text-gray-400",
           statusText: "text-gray-400",
+          // Animated elements for dark theme
+          animatedElements: {
+            primary: "bg-gray-500/20",
+            secondary: "bg-gray-600/20",
+            tertiary: "bg-gray-400/20",
+          },
         }
       case "neon":
         return {
           background: "bg-gradient-to-br from-black via-cyan-950 to-black",
-          backgroundElements: "",
           gridPattern:
             "bg-[linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)]",
           title: "bg-gradient-to-r from-cyan-400 via-cyan-300 to-white bg-clip-text text-transparent",
@@ -116,11 +137,16 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
           footer: "text-cyan-300",
           statusText: "text-cyan-300",
+          // Animated elements for neon theme
+          animatedElements: {
+            primary: "bg-cyan-500/20",
+            secondary: "bg-blue-500/20",
+            tertiary: "bg-teal-500/20",
+          },
         }
       default: // purple
         return {
           background: "bg-gradient-to-br from-black via-purple-950 to-black",
-          backgroundElements: "",
           gridPattern:
             "bg-[linear-gradient(rgba(147,51,234,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(147,51,234,0.1)_1px,transparent_1px)]",
           title: "bg-gradient-to-r from-purple-400 via-purple-300 to-white bg-clip-text text-transparent",
@@ -143,6 +169,12 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
           footer: "text-purple-300",
           statusText: "text-purple-300",
+          // Animated elements for purple theme
+          animatedElements: {
+            primary: "bg-purple-500/20",
+            secondary: "bg-purple-600/20",
+            tertiary: "bg-purple-400/10",
+          },
         }
     }
   }
@@ -152,13 +184,65 @@ export default function HomePage() {
   return (
     <div className={`min-h-screen ${styles.background} relative overflow-hidden`}>
       {/* Theme Selector */}
-      <ThemeSelector currentTheme={theme} onThemeChange={setTheme} />
+      <ThemeSelector currentTheme={theme} onThemeChange={handleThemeChange} />
 
       {/* Animated background elements */}
-      <div className={`absolute inset-0 overflow-hidden ${styles.backgroundElements}`}>
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Large floating orbs */}
+        <div
+          className={`absolute -top-40 -right-40 w-80 h-80 ${styles.animatedElements.primary} rounded-full blur-3xl animate-pulse`}
+        ></div>
+        <div
+          className={`absolute -bottom-40 -left-40 w-80 h-80 ${styles.animatedElements.secondary} rounded-full blur-3xl animate-pulse`}
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div
+          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 ${styles.animatedElements.tertiary} rounded-full blur-3xl animate-pulse`}
+          style={{ animationDelay: "0.5s" }}
+        ></div>
+
+        {/* Floating particles */}
+        <div
+          className={`absolute top-1/4 left-1/4 w-4 h-4 ${styles.animatedElements.primary} rounded-full animate-bounce`}
+          style={{ animationDelay: "0s", animationDuration: "3s" }}
+        ></div>
+        <div
+          className={`absolute top-3/4 right-1/4 w-3 h-3 ${styles.animatedElements.secondary} rounded-full animate-bounce`}
+          style={{ animationDelay: "1s", animationDuration: "4s" }}
+        ></div>
+        <div
+          className={`absolute top-1/2 right-1/3 w-2 h-2 ${styles.animatedElements.tertiary} rounded-full animate-bounce`}
+          style={{ animationDelay: "2s", animationDuration: "5s" }}
+        ></div>
+        <div
+          className={`absolute bottom-1/4 left-1/3 w-3 h-3 ${styles.animatedElements.primary} rounded-full animate-bounce`}
+          style={{ animationDelay: "1.5s", animationDuration: "3.5s" }}
+        ></div>
+        <div
+          className={`absolute top-1/6 right-1/6 w-2 h-2 ${styles.animatedElements.secondary} rounded-full animate-bounce`}
+          style={{ animationDelay: "0.8s", animationDuration: "4.2s" }}
+        ></div>
+
+        {/* Moving gradient lines */}
+        <div
+          className={`absolute top-0 left-0 w-full h-1 ${styles.animatedElements.primary} animate-pulse`}
+          style={{ animationDuration: "2s" }}
+        ></div>
+        <div
+          className={`absolute bottom-0 left-0 w-full h-1 ${styles.animatedElements.secondary} animate-pulse`}
+          style={{ animationDelay: "1s", animationDuration: "2s" }}
+        ></div>
+
+        {/* Rotating elements */}
+        <div className="absolute top-1/3 left-1/6 w-16 h-16 animate-spin" style={{ animationDuration: "20s" }}>
+          <div className={`w-full h-full ${styles.animatedElements.primary} rounded-full blur-xl`}></div>
+        </div>
+        <div
+          className="absolute bottom-1/3 right-1/6 w-12 h-12 animate-spin"
+          style={{ animationDuration: "15s", animationDirection: "reverse" }}
+        >
+          <div className={`w-full h-full ${styles.animatedElements.secondary} rounded-full blur-xl`}></div>
+        </div>
       </div>
 
       {/* Grid pattern overlay */}
@@ -175,7 +259,7 @@ export default function HomePage() {
                   : theme === "neon"
                     ? "bg-gradient-to-r from-cyan-500 to-blue-500"
                     : "bg-gradient-to-r from-purple-500 to-purple-700"
-              } rounded-lg flex items-center justify-center`}
+              } rounded-lg flex items-center justify-center animate-pulse`}
             >
               <Code className="w-6 h-6 text-white" />
             </div>
@@ -288,9 +372,6 @@ export default function HomePage() {
                 </Button>
               </div>
 
-              {/* Live Stats Section */}
-              <LiveStats theme={theme} />
-
               <div className="mt-6 text-center">
                 <p className={`${styles.statusText} text-sm`}>
                   If any services are down or flagged, we're aware and working on fixes ASAP
@@ -341,9 +422,6 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Reviews Section */}
-          <ReviewsSection theme={theme} />
         </div>
 
         {/* Footer */}
