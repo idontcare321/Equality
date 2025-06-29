@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
     hasAuthToken: !!authToken,
     isLoginPage,
     cookieValue: authToken?.value ? authToken.value.substring(0, 20) + "..." : "none",
+    allCookies: request.cookies.getAll().map((c) => c.name),
   })
 
   // If not authenticated and not on login page, redirect to login

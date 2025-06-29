@@ -145,22 +145,72 @@ export async function GET(req) {
       }),
     ).toString("base64")
 
-    console.log("Setting auth token:", authToken.substring(0, 50) + "...")
+    console.log("Creating auth token:", authToken.substring(0, 50) + "...")
 
-    // Create redirect response to home page
-    const response = NextResponse.redirect(new URL("/", req.url))
+    // Return HTML page that sets cookie and redirects
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Redirecting...</title>
+        <style>
+            body {
+                background: #000;
+                color: #fff;
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .loader {
+                text-align: center;
+            }
+            .spinner {
+                border: 4px solid #333;
+                border-top: 4px solid #8b5cf6;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 20px;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="loader">
+            <div class="spinner"></div>
+            <p>Authentication successful! Redirecting...</p>
+        </div>
+        <script>
+            console.log('Setting auth cookie...');
+            
+            // Set the cookie
+            document.cookie = 'scrp-auth=${authToken}; path=/; max-age=${30 * 24 * 60 * 60}; secure; samesite=strict';
+            
+            console.log('Cookie set, checking...');
+            console.log('Document cookies:', document.cookie);
+            
+            // Wait a moment then redirect
+            setTimeout(() => {
+                console.log('Redirecting to home page...');
+                window.location.href = '/';
+            }, 1500);
+        </script>
+    </body>
+    </html>
+    `
 
-    // Set the authentication cookie
-    response.cookies.set("scrp-auth", authToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/",
+    return new Response(html, {
+      headers: {
+        "Content-Type": "text/html",
+      },
     })
-
-    console.log("Cookie set, redirecting to home page")
-    return response
   } catch (error) {
     console.error("OAuth callback error:", error)
     return NextResponse.redirect(new URL("/login?error=auth_failed", req.url))
