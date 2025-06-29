@@ -18,12 +18,13 @@ export function middleware(request: NextRequest) {
     hasAuthToken: !!authToken,
     isLoginPage,
     cookieValue: authToken?.value ? authToken.value.substring(0, 20) + "..." : "none",
-    allCookies: request.cookies.getAll().map((c) => c.name),
+    allCookies: request.cookies.getAll().map((c) => ({ name: c.name, hasValue: !!c.value })),
+    userAgent: request.headers.get("user-agent")?.substring(0, 50),
   })
 
   // If not authenticated and not on login page, redirect to login
   if (!authToken && !isLoginPage) {
-    console.log("No auth token, redirecting to login")
+    console.log("No auth token found, redirecting to login")
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
@@ -37,10 +38,11 @@ export function middleware(request: NextRequest) {
   if (authToken && !isLoginPage) {
     try {
       const userData = JSON.parse(Buffer.from(authToken.value, "base64").toString())
-      console.log("Token validation:", {
+      console.log("Token validation successful:", {
         hasUserId: !!userData.userId,
         hasUsername: !!userData.username,
         username: userData.username,
+        loginTime: userData.loginTime ? new Date(userData.loginTime).toISOString() : "unknown",
       })
 
       if (!userData.userId || !userData.username) {
@@ -50,7 +52,15 @@ export function middleware(request: NextRequest) {
         return response
       }
 
-      console.log("Token valid, allowing access")
+      // Check if token is too old (optional - 30 days)
+      if (userData.loginTime && Date.now() - userData.loginTime > 30 * 24 * 60 * 60 * 1000) {
+        console.log("Token expired, clearing cookie and redirecting to login")
+        const response = NextResponse.redirect(new URL("/login", request.url))
+        response.cookies.delete("scrp-auth")
+        return response
+      }
+
+      console.log("Token valid, allowing access to:", request.nextUrl.pathname)
     } catch (error) {
       console.log("Token parsing error:", error.message)
       const response = NextResponse.redirect(new URL("/login", request.url))
