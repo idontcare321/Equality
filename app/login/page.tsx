@@ -1,10 +1,38 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Shield, ExternalLink } from "lucide-react"
+import { Shield, ExternalLink, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check for error in URL params
+    const urlParams = new URLSearchParams(window.location.search)
+    const errorParam = urlParams.get("error")
+
+    if (errorParam) {
+      switch (errorParam) {
+        case "missing_code":
+          setError("Authorization code missing. Please try again.")
+          break
+        case "token_failed":
+          setError("Failed to get Discord token. Please try again.")
+          break
+        case "user_failed":
+          setError("Failed to get user information. Please try again.")
+          break
+        case "auth_failed":
+          setError("Authentication failed. Please try again.")
+          break
+        default:
+          setError("An error occurred during login. Please try again.")
+      }
+    }
+  }, [])
+
   const discordOAuthUrl =
     "https://discord.com/api/oauth2/authorize?client_id=1388702262829781093&redirect_uri=https%3A%2F%2Fscrpsites.vercel.app%2Fapi%2Fcallback&response_type=code&scope=identify"
 
@@ -35,6 +63,16 @@ export default function LoginPage() {
               <h1 className="text-3xl font-bold text-white mb-2">SCRP Panel</h1>
               <p className="text-gray-400 text-sm">Secure access to your dashboard</p>
             </div>
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                <div className="flex items-center gap-2 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  {error}
+                </div>
+              </div>
+            )}
 
             {/* Discord login button */}
             <Button

