@@ -1,12 +1,16 @@
+import { NextResponse } from "next/server"
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
 
   if (!code) {
-    return Response.redirect("https://scrpsites.vercel.app/login?error=missing_code")
+    return NextResponse.redirect(new URL("/login?error=missing_code", req.url))
   }
 
   try {
+    console.log("Starting OAuth callback with code:", code.substring(0, 10) + "...")
+
     // Exchange code for token
     const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
@@ -22,10 +26,11 @@ export async function GET(req) {
     })
 
     const tokenData = await tokenRes.json()
+    console.log("Token response:", tokenData.access_token ? "Success" : "Failed")
 
     if (!tokenData.access_token) {
       console.error("Discord token error:", tokenData)
-      return Response.redirect("https://scrpsites.vercel.app/login?error=token_failed")
+      return NextResponse.redirect(new URL("/login?error=token_failed", req.url))
     }
 
     // Get user info
@@ -36,10 +41,11 @@ export async function GET(req) {
     })
 
     const user = await userRes.json()
+    console.log("User data:", user.username ? `${user.username}#${user.discriminator}` : "Failed")
 
     if (!user.id) {
       console.error("Discord user error:", user)
-      return Response.redirect("https://scrpsites.vercel.app/login?error=user_failed")
+      return NextResponse.redirect(new URL("/login?error=user_failed", req.url))
     }
 
     // Build avatar URL
@@ -128,7 +134,7 @@ export async function GET(req) {
       // Don't fail auth because of webhook issues
     }
 
-    // Create authentication token (this is what the middleware expects)
+    // Create authentication token
     const authToken = Buffer.from(
       JSON.stringify({
         userId: user.id,
@@ -139,22 +145,24 @@ export async function GET(req) {
       }),
     ).toString("base64")
 
-    console.log("Creating auth token:", authToken.substring(0, 50) + "...")
+    console.log("Setting auth token:", authToken.substring(0, 50) + "...")
 
-    // Create response with redirect and set cookie
-    const response = Response.redirect("https://scrpsites.vercel.app/")
+    // Create redirect response to home page
+    const response = NextResponse.redirect(new URL("/", req.url))
 
-    // Set the authentication cookie using Set-Cookie header
-    response.headers.set(
-      "Set-Cookie",
-      `scrp-auth=${authToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 60 * 60}; Path=/`,
-    )
+    // Set the authentication cookie
+    response.cookies.set("scrp-auth", authToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: "/",
+    })
 
-    console.log("Auth cookie set, redirecting to main site")
-
+    console.log("Cookie set, redirecting to home page")
     return response
   } catch (error) {
     console.error("OAuth callback error:", error)
-    return Response.redirect("https://scrpsites.vercel.app/login?error=auth_failed")
+    return NextResponse.redirect(new URL("/login?error=auth_failed", req.url))
   }
 }

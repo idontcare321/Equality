@@ -12,38 +12,46 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Debug logging (remove in production)
+  // Debug logging
   console.log("Middleware check:", {
     path: request.nextUrl.pathname,
     hasAuthToken: !!authToken,
     isLoginPage,
-    authTokenValue: authToken?.value ? "present" : "missing",
+    cookieValue: authToken?.value ? authToken.value.substring(0, 20) + "..." : "none",
   })
 
   // If not authenticated and not on login page, redirect to login
   if (!authToken && !isLoginPage) {
-    console.log("Redirecting to login - no auth token")
+    console.log("No auth token, redirecting to login")
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
   // If authenticated and on login page, redirect to home
   if (authToken && isLoginPage) {
-    console.log("Redirecting to home - already authenticated")
+    console.log("Already authenticated, redirecting to home")
     return NextResponse.redirect(new URL("/", request.url))
   }
 
-  // Verify the auth token is valid
+  // Verify the auth token is valid (only if we have one and not on login page)
   if (authToken && !isLoginPage) {
     try {
       const userData = JSON.parse(Buffer.from(authToken.value, "base64").toString())
+      console.log("Token validation:", {
+        hasUserId: !!userData.userId,
+        hasUsername: !!userData.username,
+        username: userData.username,
+      })
+
       if (!userData.userId || !userData.username) {
-        console.log("Invalid auth token, clearing and redirecting to login")
+        console.log("Invalid token data, clearing cookie and redirecting to login")
         const response = NextResponse.redirect(new URL("/login", request.url))
         response.cookies.delete("scrp-auth")
         return response
       }
+
+      console.log("Token valid, allowing access")
     } catch (error) {
-      console.log("Corrupted auth token, clearing and redirecting to login")
+      console.log("Token parsing error:", error.message)
       const response = NextResponse.redirect(new URL("/login", request.url))
       response.cookies.delete("scrp-auth")
       return response
