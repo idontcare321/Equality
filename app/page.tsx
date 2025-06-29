@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings, LogOut, CheckCircle } from "lucide-react"
+import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings, LogOut } from "lucide-react"
 import { ThemeSelector, type Theme } from "@/components/theme-selector"
 import { ToolsStatus } from "@/components/tools-status"
 
@@ -21,7 +21,6 @@ export default function HomePage() {
   const [theme, setTheme] = useState<Theme>("purple")
   const [user, setUser] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
   // Load user data and theme on component mount
   useEffect(() => {
@@ -46,16 +45,6 @@ export default function HomePage() {
     const savedTheme = localStorage.getItem("scrp-theme") as Theme
     if (savedTheme && ["purple", "dark", "light", "neon"].includes(savedTheme)) {
       setTheme(savedTheme)
-    }
-
-    // Check for success parameter in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get("success") === "true") {
-      setShowSuccessMessage(true)
-      // Remove the success parameter from URL
-      window.history.replaceState({}, document.title, window.location.pathname)
-      // Hide success message after 5 seconds
-      setTimeout(() => setShowSuccessMessage(false), 5000)
     }
   }, [])
 
@@ -128,8 +117,6 @@ export default function HomePage() {
           userCard: "bg-white/90 border-gray-200",
           userText: "text-gray-800",
           logoutButton: "bg-red-100 border-red-300 text-red-800 hover:bg-red-200",
-          successCard: "bg-green-100 border-green-300",
-          successText: "text-green-800",
           // Animated elements for light theme
           animatedElements: {
             primary: "bg-blue-500/10",
@@ -163,8 +150,6 @@ export default function HomePage() {
           userCard: "bg-gray-900/70 border-gray-700",
           userText: "text-white",
           logoutButton: "bg-red-900/30 border-red-700 text-red-200 hover:bg-red-800/50",
-          successCard: "bg-green-900/30 border-green-700",
-          successText: "text-green-200",
           // Animated elements for dark theme
           animatedElements: {
             primary: "bg-gray-500/20",
@@ -198,8 +183,6 @@ export default function HomePage() {
           userCard: "bg-black/50 border-cyan-500/30",
           userText: "text-white",
           logoutButton: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50",
-          successCard: "bg-green-900/30 border-green-500/50",
-          successText: "text-green-200",
           // Animated elements for neon theme
           animatedElements: {
             primary: "bg-cyan-500/20",
@@ -235,8 +218,6 @@ export default function HomePage() {
           userCard: "bg-black/50 border-purple-500/30",
           userText: "text-white",
           logoutButton: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50",
-          successCard: "bg-green-900/30 border-green-500/50",
-          successText: "text-green-200",
           // Animated elements for purple theme
           animatedElements: {
             primary: "bg-purple-500/20",
@@ -271,18 +252,6 @@ export default function HomePage() {
     <div className={`min-h-screen ${styles.background} relative overflow-hidden`}>
       {/* Theme Selector */}
       <ThemeSelector currentTheme={theme} onThemeChange={handleThemeChange} />
-
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <Card className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 ${styles.successCard} backdrop-blur-sm`}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <p className={`${styles.successText} font-medium`}>Successfully logged in! Welcome to SCRP Panel.</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* User Info Card */}
       {user && (
