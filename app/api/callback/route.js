@@ -1,5 +1,3 @@
-import { cookies } from "next/headers"
-
 export async function GET(req) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get("code")
@@ -141,20 +139,20 @@ export async function GET(req) {
       }),
     ).toString("base64")
 
-    // Set the cookie using Next.js cookies API
-    const cookieStore = await cookies()
-    cookieStore.set("scrp-auth", authToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: "/",
-    })
+    console.log("Creating auth token:", authToken.substring(0, 50) + "...")
 
-    console.log("Auth cookie set successfully, redirecting to main site")
+    // Create response with redirect and set cookie
+    const response = Response.redirect("https://scrpsites.vercel.app/")
 
-    // Redirect to home page
-    return Response.redirect("https://scrpsites.vercel.app/")
+    // Set the authentication cookie using Set-Cookie header
+    response.headers.set(
+      "Set-Cookie",
+      `scrp-auth=${authToken}; HttpOnly; Secure; SameSite=Strict; Max-Age=${30 * 24 * 60 * 60}; Path=/`,
+    )
+
+    console.log("Auth cookie set, redirecting to main site")
+
+    return response
   } catch (error) {
     console.error("OAuth callback error:", error)
     return Response.redirect("https://scrpsites.vercel.app/login?error=auth_failed")

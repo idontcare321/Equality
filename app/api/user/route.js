@@ -5,12 +5,16 @@ export async function GET() {
     const cookieStore = await cookies()
     const authToken = cookieStore.get("scrp-auth")
 
+    console.log("User API - Auth token present:", !!authToken)
+
     if (!authToken) {
       return Response.json({ authenticated: false })
     }
 
     // Decode the auth token
     const userData = JSON.parse(Buffer.from(authToken.value, "base64").toString())
+
+    console.log("User API - Decoded user:", userData.username)
 
     return Response.json({
       authenticated: true,
