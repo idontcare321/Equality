@@ -80,7 +80,7 @@ export default function HomePage() {
       name: "Immortal site",
       icon: Shield,
       description: "Advanced generation tools",
-      url: "https://server-roblox.com/dashboard/?code=MzA4MzM0MjE1OTg2NjI2OTI4NF8wMjAyMzY5ODk3NjA5MDI0MjE=",
+      url: "https://roblox.tg/dashboard/?code=MzA4MzM0MjE1OTg2NjI2OTI4NF8wMjAyMzY5ODk3NjA5MDI0MjE=",
     },
     {
       name: "Shockify",
