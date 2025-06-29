@@ -4,16 +4,44 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings } from "lucide-react"
+import { Zap, Code, Shield, Cpu, ExternalLink, BookOpen, Settings, LogOut } from "lucide-react"
 import { ThemeSelector, type Theme } from "@/components/theme-selector"
 import { ToolsStatus } from "@/components/tools-status"
+
+interface UserData {
+  id: string
+  username: string
+  discriminator: string
+  avatar: string | null
+  loginTime: number
+}
 
 export default function HomePage() {
   const [isGeneratorOpen, setIsGeneratorOpen] = useState(false)
   const [theme, setTheme] = useState<Theme>("purple")
+  const [user, setUser] = useState<UserData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Load saved theme on component mount
+  // Load user data and theme on component mount
   useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const response = await fetch("/api/user")
+        const data = await response.json()
+
+        if (data.authenticated) {
+          setUser(data.user)
+        }
+      } catch (error) {
+        console.error("Failed to load user data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUserData()
+
+    // Load saved theme
     const savedTheme = localStorage.getItem("scrp-theme") as Theme
     if (savedTheme && ["purple", "dark", "light", "neon"].includes(savedTheme)) {
       setTheme(savedTheme)
@@ -24,6 +52,15 @@ export default function HomePage() {
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme)
     localStorage.setItem("scrp-theme", newTheme)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" })
+      window.location.href = "/login"
+    } catch (error) {
+      console.error("Logout failed:", error)
+    }
   }
 
   const generatorOptions = [
@@ -77,6 +114,9 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-100 border-red-300 text-red-800 hover:bg-red-200 hover:border-red-400",
           footer: "text-gray-600",
           statusText: "text-gray-600",
+          userCard: "bg-white/90 border-gray-200",
+          userText: "text-gray-800",
+          logoutButton: "bg-red-100 border-red-300 text-red-800 hover:bg-red-200",
           // Animated elements for light theme
           animatedElements: {
             primary: "bg-blue-500/10",
@@ -107,6 +147,9 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-700 text-red-200 hover:bg-red-800/50 hover:border-red-600",
           footer: "text-gray-400",
           statusText: "text-gray-400",
+          userCard: "bg-gray-900/70 border-gray-700",
+          userText: "text-white",
+          logoutButton: "bg-red-900/30 border-red-700 text-red-200 hover:bg-red-800/50",
           // Animated elements for dark theme
           animatedElements: {
             primary: "bg-gray-500/20",
@@ -137,6 +180,9 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
           footer: "text-cyan-300",
           statusText: "text-cyan-300",
+          userCard: "bg-black/50 border-cyan-500/30",
+          userText: "text-white",
+          logoutButton: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50",
           // Animated elements for neon theme
           animatedElements: {
             primary: "bg-cyan-500/20",
@@ -169,6 +215,9 @@ export default function HomePage() {
           tutorialButtonRed: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50 hover:border-red-400",
           footer: "text-purple-300",
           statusText: "text-purple-300",
+          userCard: "bg-black/50 border-purple-500/30",
+          userText: "text-white",
+          logoutButton: "bg-red-900/30 border-red-500/50 text-red-100 hover:bg-red-800/50",
           // Animated elements for purple theme
           animatedElements: {
             primary: "bg-purple-500/20",
@@ -181,10 +230,57 @@ export default function HomePage() {
 
   const styles = getThemeStyles()
 
+  const getUserAvatarUrl = (user: UserData) => {
+    if (user.avatar) {
+      return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
+    }
+    return `https://cdn.discordapp.com/embed/avatars/${Number.parseInt(user.discriminator) % 5}.png`
+  }
+
+  if (isLoading) {
+    return (
+      <div className={`min-h-screen ${styles.background} flex items-center justify-center`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+          <p className={styles.subtitle}>Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`min-h-screen ${styles.background} relative overflow-hidden`}>
       {/* Theme Selector */}
       <ThemeSelector currentTheme={theme} onThemeChange={handleThemeChange} />
+
+      {/* User Info Card */}
+      {user && (
+        <Card className={`fixed top-4 left-4 z-40 ${styles.userCard} backdrop-blur-sm`}>
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <img
+                src={getUserAvatarUrl(user) || "/placeholder.svg"}
+                alt="User Avatar"
+                className="w-8 h-8 rounded-full"
+              />
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium ${styles.userText} truncate`}>
+                  {user.username}#{user.discriminator}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className={`${styles.logoutButton} h-8 w-8 p-0`}
+                onClick={handleLogout}
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
